@@ -1,3 +1,4 @@
+import path from 'path'; 
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -38,6 +39,18 @@ app.use('/api/premium', premiumRoutes);
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Serve frontend in production
+import { createRequire } from 'module';
+import { fileURLToPath as fu } from 'url';
+const __dir = path.dirname(fu(import.meta.url));
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dir, '../client/dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dir, '../client/dist/index.html'));
+  });
+}
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
